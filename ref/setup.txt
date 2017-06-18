@@ -1,0 +1,8 @@
+** 콘솔에서
+$mvn clean package
+$cd target
+$java -jar websocket.war
+
+
+** eclipse안에서는
+=> SpringBootWebApplication 을 실행
