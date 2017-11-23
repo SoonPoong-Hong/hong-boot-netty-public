@@ -43,44 +43,17 @@ import java.io.InputStreamReader;
 import java.net.URI;
 
 /**
- * This is an example of a WebSocket client.
- * <p>
- * In order to run this example you need a compatible WebSocket server.
- * Therefore you can either start the WebSocket server from the examples
- * by running {@link io.netty.example.http.websocketx.server.WebSocketServer}
- * or connect to an existing WebSocket server such as
- * <a href="http://www.websocket.org/echo.html">ws://echo.websocket.org</a>.
- * <p>
- * The client will attempt to connect to the URI passed to it as the first argument.
- * You don't have to specify any arguments if you want to connect to the example WebSocket server,
- * as this is the default.
+ * 장애 받는 웹소켓
  */
-public final class WebSocketClient {
+public final class WebSocketClient_92 {
 
-//    static final String URL = System.getProperty("url", "ws://127.0.0.1:8080/websocket");
-    static final String URL = System.getProperty("url", "ws://12.4.96.92:59768");
 
     public static void main(String[] args) throws Exception {
-        URI uri = new URI(URL);
-        String scheme = uri.getScheme() == null? "ws" : uri.getScheme();
-        final String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
+        URI uri = new URI("ws://12.4.96.92:59768");
+        String scheme = uri.getScheme();
+        final String host = uri.getHost();
         final int port;
-        if (uri.getPort() == -1) {
-            if ("ws".equalsIgnoreCase(scheme)) {
-                port = 80;
-            } else if ("wss".equalsIgnoreCase(scheme)) {
-                port = 443;
-            } else {
-                port = -1;
-            }
-        } else {
-            port = uri.getPort();
-        }
-
-        if (!"ws".equalsIgnoreCase(scheme) && !"wss".equalsIgnoreCase(scheme)) {
-            System.err.println("Only WS(S) is supported.");
-            return;
-        }
+        port = uri.getPort();
 
         final boolean ssl = "wss".equalsIgnoreCase(scheme);
         final SslContext sslCtx;
@@ -93,9 +66,6 @@ public final class WebSocketClient {
 
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            // Connect with V13 (RFC 6455 aka HyBi-17). You can change it to V08 or V00.
-            // If you change it to V00, ping is not supported and remember to change
-            // HttpResponseDecoder to WebSocketHttpResponseDecoder in the pipeline.
             final WebSocketClientHandler handler =
                     new WebSocketClientHandler(
                             WebSocketClientHandshakerFactory.newHandshaker(

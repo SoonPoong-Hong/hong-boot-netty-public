@@ -98,7 +98,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
             TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-            System.out.println("WebSocket Client received message: " + textFrame.text());
+            System.out.println(textFrame.text());
         } else if (frame instanceof PongWebSocketFrame) {
             System.out.println("WebSocket Client received pong");
         } else if (frame instanceof CloseWebSocketFrame) {
