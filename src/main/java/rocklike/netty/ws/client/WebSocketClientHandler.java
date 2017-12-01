@@ -38,7 +38,10 @@
 package rocklike.netty.ws.client;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.Channel;
@@ -59,9 +62,16 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
 	private LocalDateTime start;
 	private LocalDateTime end;
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("[HH:mm:ss] ", Locale.KOREA);
 
 	private final WebSocketClientHandshaker handshaker;
 	private ChannelPromise handshakeFuture;
+
+//	public static void main(String[] args) {
+//		DateTimeFormatter pattern = DateTimeFormatter.ofPattern("HH:mm:ss");
+//		String f = LocalDateTime.now().format(pattern);
+//		System.out.println(f);
+//	}
 
 	public WebSocketClientHandler(WebSocketClientHandshaker handshaker) {
 		this.handshaker = handshaker;
@@ -82,28 +92,34 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		handshaker.handshake(ctx.channel());
 	}
 
+	private String now() {
+		String str = LocalDateTime.now().format(formatter);
+		return str;
+	}
+
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
+//		DateTimeFormatter.ofPattern("hh:MM:ss")
+//		LocalDateTime.now().for
 		end = LocalDateTime.now();
-		System.out.println("WebSocket Client disconnected!");
+		System.out.println(now() + "WebSocket Client disconnected!");
 		System.out.printf("== 시작 : %s \n", start);
 		System.out.printf("== 끝 : %s \n", end);
 		System.out.printf("== 걸린시간(분) : %s \n", ChronoUnit.SECONDS.between(start, end) / 60.0);
-
 	}
 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		final EventLoop loop = ctx.channel().eventLoop();
 		loop.schedule(() -> {
-			System.out.println("=== Reconnecting.. ");
+			System.out.println(now() + "=== Reconnecting.. ");
 			try {
 				new WebSocketClient_92().start(loop);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
-		}, 5, TimeUnit.SECONDS);
+		}, 1, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -125,7 +141,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		WebSocketFrame frame = (WebSocketFrame) msg;
 		if (frame instanceof TextWebSocketFrame) {
 			TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-			System.out.println(textFrame.text());
+//			System.out.println(textFrame.text());
 		} else if (frame instanceof PongWebSocketFrame) {
 			System.out.println("WebSocket Client received pong");
 		} else if (frame instanceof CloseWebSocketFrame) {
