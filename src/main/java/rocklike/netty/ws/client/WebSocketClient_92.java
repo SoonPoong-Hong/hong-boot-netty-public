@@ -47,7 +47,17 @@ public final class WebSocketClient_92 {
 		WebSocketClient_92 main = new WebSocketClient_92();
 		EventLoopGroup eventGroup = new NioEventLoopGroup();
 		main.start(eventGroup);
-		Thread.sleep(24 * 60 * 1000L);
+
+		Thread eternal = new Thread(()-> {
+			try {
+				Thread.sleep(24*60*1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+		eternal.setDaemon(false);
+		eternal.start();
 	}
 
 	void start(EventLoopGroup eventGroup) throws Exception {
@@ -62,18 +72,21 @@ public final class WebSocketClient_92 {
 
 		Bootstrap b = new Bootstrap();
 
-		b.group(eventGroup).channel(NioSocketChannel.class).option(ChannelOption.SO_KEEPALIVE, true)
+		b.group(eventGroup)
+		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 1000)
+		.channel(NioSocketChannel.class)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					protected void initChannel(SocketChannel ch) {
 						ChannelPipeline p = ch.pipeline();
-						p.addLast(new HttpClientCodec(), new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE,
+						p.addLast(new HttpClientCodec(), new HttpObjectAggregator(18192), WebSocketClientCompressionHandler.INSTANCE,
 								handler);
 					}
 				});
 
-		Channel ch = b.connect(uri.getHost(), port).sync().channel();
-		handler.handshakeFuture().sync();
+//		b.connect(uri.getHost(), port);
+		b.connect(uri.getHost(), port);
+//		handler.handshakeFuture().sync();
 
 	}
 

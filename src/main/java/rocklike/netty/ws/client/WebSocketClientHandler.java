@@ -39,7 +39,6 @@ package rocklike.netty.ws.client;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +49,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
@@ -106,6 +106,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		System.out.printf("== 시작 : %s \n", start);
 		System.out.printf("== 끝 : %s \n", end);
 		System.out.printf("== 걸린시간(분) : %s \n", ChronoUnit.SECONDS.between(start, end) / 60.0);
+
 	}
 
 	@Override
@@ -119,7 +120,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 				e.printStackTrace();
 			}
 
-		}, 1, TimeUnit.SECONDS);
+		}, 2, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		Channel ch = ctx.channel();
 		if (!handshaker.isHandshakeComplete()) {
 			handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-			System.out.println("WebSocket Client connected!");
+			System.out.println(now() + "WebSocket Client connected!");
 			handshakeFuture.setSuccess();
 			return;
 		}
