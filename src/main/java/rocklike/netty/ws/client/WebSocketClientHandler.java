@@ -103,9 +103,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 //		LocalDateTime.now().for
 		end = LocalDateTime.now();
 		System.out.println(now() + "WebSocket Client disconnected!");
-		System.out.printf("== 시작 : %s \n", start);
-		System.out.printf("== 끝 : %s \n", end);
-		System.out.printf("== 걸린시간(분) : %s \n", ChronoUnit.SECONDS.between(start, end) / 60.0);
+		System.out.printf("== 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
 
 	}
 
