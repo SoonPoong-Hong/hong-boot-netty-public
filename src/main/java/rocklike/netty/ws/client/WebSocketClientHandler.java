@@ -37,10 +37,15 @@
 
 package rocklike.netty.ws.client;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
@@ -52,67 +57,89 @@ import io.netty.util.CharsetUtil;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
-    private final WebSocketClientHandshaker handshaker;
-    private ChannelPromise handshakeFuture;
+	private LocalDateTime start;
+	private LocalDateTime end;
 
-    public WebSocketClientHandler(WebSocketClientHandshaker handshaker) {
-        this.handshaker = handshaker;
-    }
+	private final WebSocketClientHandshaker handshaker;
+	private ChannelPromise handshakeFuture;
 
-    public ChannelFuture handshakeFuture() {
-        return handshakeFuture;
-    }
+	public WebSocketClientHandler(WebSocketClientHandshaker handshaker) {
+		this.handshaker = handshaker;
+	}
 
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) {
-        handshakeFuture = ctx.newPromise();
-    }
+	public ChannelFuture handshakeFuture() {
+		return handshakeFuture;
+	}
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        handshaker.handshake(ctx.channel());
-    }
+	@Override
+	public void handlerAdded(ChannelHandlerContext ctx) {
+		handshakeFuture = ctx.newPromise();
+	}
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println("WebSocket Client disconnected!");
-    }
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) {
+		start = LocalDateTime.now();
+		handshaker.handshake(ctx.channel());
+	}
 
-    @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        Channel ch = ctx.channel();
-        if (!handshaker.isHandshakeComplete()) {
-            handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            System.out.println("WebSocket Client connected!");
-            handshakeFuture.setSuccess();
-            return;
-        }
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) {
+		end = LocalDateTime.now();
+		System.out.println("WebSocket Client disconnected!");
+		System.out.printf("== 시작 : %s \n", start);
+		System.out.printf("== 끝 : %s \n", end);
+		System.out.printf("== 걸린시간(분) : %s \n", ChronoUnit.SECONDS.between(start, end) / 60.0);
 
-        if (msg instanceof FullHttpResponse) {
-            FullHttpResponse response = (FullHttpResponse) msg;
-            throw new IllegalStateException(
-                    "Unexpected FullHttpResponse (getStatus=" + response.status() +
-                            ", content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
-        }
+	}
 
-        WebSocketFrame frame = (WebSocketFrame) msg;
-        if (frame instanceof TextWebSocketFrame) {
-            TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-            System.out.println(textFrame.text());
-        } else if (frame instanceof PongWebSocketFrame) {
-            System.out.println("WebSocket Client received pong");
-        } else if (frame instanceof CloseWebSocketFrame) {
-            System.out.println("WebSocket Client received closing");
-            ch.close();
-        }
-    }
+	@Override
+	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+		final EventLoop loop = ctx.channel().eventLoop();
+		loop.schedule(() -> {
+			System.out.println("=== Reconnecting.. ");
+			try {
+				new WebSocketClient_92().start(loop);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        if (!handshakeFuture.isDone()) {
-            handshakeFuture.setFailure(cause);
-        }
-        ctx.close();
-    }
+		}, 5, TimeUnit.SECONDS);
+	}
+
+	@Override
+	public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+		Channel ch = ctx.channel();
+		if (!handshaker.isHandshakeComplete()) {
+			handshaker.finishHandshake(ch, (FullHttpResponse) msg);
+			System.out.println("WebSocket Client connected!");
+			handshakeFuture.setSuccess();
+			return;
+		}
+
+		if (msg instanceof FullHttpResponse) {
+			FullHttpResponse response = (FullHttpResponse) msg;
+			throw new IllegalStateException("Unexpected FullHttpResponse (getStatus=" + response.status() + ", content="
+					+ response.content().toString(CharsetUtil.UTF_8) + ')');
+		}
+
+		WebSocketFrame frame = (WebSocketFrame) msg;
+		if (frame instanceof TextWebSocketFrame) {
+			TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
+			System.out.println(textFrame.text());
+		} else if (frame instanceof PongWebSocketFrame) {
+			System.out.println("WebSocket Client received pong");
+		} else if (frame instanceof CloseWebSocketFrame) {
+			System.out.println("WebSocket Client received closing");
+			ch.close();
+		}
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+		cause.printStackTrace();
+		if (!handshakeFuture.isDone()) {
+			handshakeFuture.setFailure(cause);
+		}
+		ctx.close();
+	}
 }
