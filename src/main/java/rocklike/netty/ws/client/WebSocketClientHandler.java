@@ -120,7 +120,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 				e.printStackTrace();
 			}
 
-		}, 2, TimeUnit.SECONDS);
+		}, 100, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
