@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
@@ -84,12 +85,22 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	@Override
 	public void handlerAdded(ChannelHandlerContext ctx) {
 		handshakeFuture = ctx.newPromise();
+		handshakeFuture.addListener(new ChannelFutureListener() {
+
+			@Override
+			public void operationComplete(ChannelFuture future) throws Exception {
+				WebSocketFrame frame = new TextWebSocketFrame("{kind: \"ID\", ID: \"admin\"}");
+				ctx.writeAndFlush(frame);
+			}
+		});
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) {
 		start = LocalDateTime.now();
 		handshaker.handshake(ctx.channel());
+		// {kind: "ID", ID: "admin"}
+//		handshakeFuture
 	}
 
 	private String now() {
@@ -111,15 +122,15 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		final EventLoop loop = ctx.channel().eventLoop();
 		// 끊어지면 1초 있다가 다시 connect
-		loop.schedule(() -> {
-			System.out.println(now() + "=== Reconnecting.. ");
-			try {
-				new WebSocketClient_92().start(loop);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		}, 1000, TimeUnit.MILLISECONDS);
+//		loop.schedule(() -> {
+//			System.out.println(now() + "=== Reconnecting.. ");
+//			try {
+//				new WebSocketClient_92().start(loop);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//
+//		}, 1000, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -141,8 +152,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		WebSocketFrame frame = (WebSocketFrame) msg;
 		if (frame instanceof TextWebSocketFrame) {
 			TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-			System.out.println(textFrame.text());
-//			System.out.println(textFrame.text().substring(0, 20));
+//			System.out.println(textFrame.text());
+			System.out.println(textFrame.text().substring(0, 3));
 		} else if (frame instanceof PongWebSocketFrame) {
 			System.out.println("WebSocket Client received pong");
 		} else if (frame instanceof CloseWebSocketFrame) {

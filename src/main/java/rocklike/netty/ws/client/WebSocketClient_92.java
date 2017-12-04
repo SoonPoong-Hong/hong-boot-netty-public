@@ -20,6 +20,8 @@ import java.net.URISyntaxException;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -73,20 +75,28 @@ public final class WebSocketClient_92 {
 		Bootstrap b = new Bootstrap();
 
 		b.group(eventGroup)
-		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2 * 1000)
+		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 4 * 1000)
 		.channel(NioSocketChannel.class)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					protected void initChannel(SocketChannel ch) {
 						ChannelPipeline p = ch.pipeline();
-						p.addLast(new HttpClientCodec(), new HttpObjectAggregator(18192), WebSocketClientCompressionHandler.INSTANCE,
+						p.addLast(new HttpClientCodec(), new HttpObjectAggregator(18192),// WebSocketClientCompressionHandler.INSTANCE,
 								handler);
 					}
 				});
 
-//		b.connect(uri.getHost(), port);
-		b.connect(uri.getHost(), port);
-//		handler.handshakeFuture().sync();
+
+		ChannelFuture connectFuture = b.connect(uri.getHost(), port);
+		connectFuture.addListener(new ChannelFutureListener() {
+			@Override
+			public void operationComplete(ChannelFuture future) throws Exception {
+				if(!future.isSuccess()) {
+					System.err.println("== connect 실패");
+					future.cause().printStackTrace();
+				}
+			}
+		});
 
 	}
 
