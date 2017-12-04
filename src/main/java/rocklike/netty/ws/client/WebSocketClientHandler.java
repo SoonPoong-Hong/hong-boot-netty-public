@@ -110,6 +110,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		final EventLoop loop = ctx.channel().eventLoop();
+		// 끊어지면 1초 있다가 다시 connect
 		loop.schedule(() -> {
 			System.out.println(now() + "=== Reconnecting.. ");
 			try {
@@ -118,7 +119,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 				e.printStackTrace();
 			}
 
-		}, 100, TimeUnit.MILLISECONDS);
+		}, 1000, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
