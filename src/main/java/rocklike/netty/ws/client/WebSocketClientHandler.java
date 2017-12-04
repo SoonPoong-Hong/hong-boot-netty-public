@@ -57,6 +57,8 @@ import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
@@ -86,7 +88,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	public void handlerAdded(ChannelHandlerContext ctx) {
 		handshakeFuture = ctx.newPromise();
 		handshakeFuture.addListener(new ChannelFutureListener() {
-
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
 				WebSocketFrame frame = new TextWebSocketFrame("{kind: \"ID\", ID: \"admin\"}");
@@ -99,8 +100,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	public void channelActive(ChannelHandlerContext ctx) {
 		start = LocalDateTime.now();
 		handshaker.handshake(ctx.channel());
-		// {kind: "ID", ID: "admin"}
-//		handshakeFuture
 	}
 
 	private String now() {
@@ -110,27 +109,37 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
-//		DateTimeFormatter.ofPattern("hh:MM:ss")
-//		LocalDateTime.now().for
 		end = LocalDateTime.now();
 		System.out.println(now() + "WebSocket Client disconnected!");
 		System.out.printf("== 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
-
 	}
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+        if (!(evt instanceof IdleStateEvent)) {
+            return;
+        }
+
+        IdleStateEvent e = (IdleStateEvent) evt;
+        if (e.state() == IdleState.READER_IDLE) {
+            System.out.println("=== read idle timeout으로 다시 connect함.");
+            ctx.close();
+        }
+    }
 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		final EventLoop loop = ctx.channel().eventLoop();
 		// 끊어지면 1초 있다가 다시 connect
-//		loop.schedule(() -> {
-//			System.out.println(now() + "=== Reconnecting.. ");
-//			try {
-//				new WebSocketClient_92().start(loop);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//
-//		}, 1000, TimeUnit.MILLISECONDS);
+		loop.schedule(() -> {
+			System.out.println(now() + "=== Reconnecting.. ");
+			try {
+				new WebSocketClient_92().start(loop);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}, 1000, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -152,8 +161,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		WebSocketFrame frame = (WebSocketFrame) msg;
 		if (frame instanceof TextWebSocketFrame) {
 			TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-//			System.out.println(textFrame.text());
-			System.out.println(textFrame.text().substring(0, 3));
+			System.out.println(textFrame.text());
+//			System.out.println(textFrame.text().substring(0, 3));
 		} else if (frame instanceof PongWebSocketFrame) {
 			System.out.println("WebSocket Client received pong");
 		} else if (frame instanceof CloseWebSocketFrame) {

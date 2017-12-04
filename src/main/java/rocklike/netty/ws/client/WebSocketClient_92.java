@@ -16,10 +16,8 @@
 package rocklike.netty.ws.client;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
@@ -35,9 +33,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.timeout.IdleStateHandler;
 
 /**
@@ -81,8 +76,11 @@ public final class WebSocketClient_92 {
 					@Override
 					protected void initChannel(SocketChannel ch) {
 						ChannelPipeline p = ch.pipeline();
-						p.addLast(new HttpClientCodec(), new HttpObjectAggregator(18192),// WebSocketClientCompressionHandler.INSTANCE,
-								handler);
+						p.addLast(new HttpClientCodec()
+								, new HttpObjectAggregator(8192)
+								, WebSocketClientCompressionHandler.INSTANCE
+								, new IdleStateHandler(50, 0, 0)
+								, handler);
 					}
 				});
 
