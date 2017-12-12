@@ -115,7 +115,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
 		end = LocalDateTime.now();
-		logger.info("=== disconnected => 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
+		logger.info(String.format("=== disconnected => 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0));
 //		System.out.printf(now() + "=== disconnected => 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
 	}
 

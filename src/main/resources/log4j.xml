@@ -5,7 +5,8 @@
 
 	<appender name="console" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="[%d{yyyy-MM-dd hh:mm:ss.SSS}] %-5p [%t] %C{1}.%M(%L) - %m%n" />
+<!-- 			<param name="ConversionPattern" value="[%d{yyyy-MM-dd hh:mm:ss.SSS}] %-5p [%t] %C{1}.%M(%L) - %m%n" /> -->
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd hh:mm:ss.SSS}] %-5p - %m%n" />
 		</layout>
 	</appender>
 
@@ -15,7 +16,8 @@
 		<param name="maxBackupIndex" value="10" />
 		<param name="file" value="/data/miuser/ews/apps/log/websocket-test.log" /> <!-- ${logfilename} -->
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="[%d{yyyy-MM-dd hh:mm:ss.SSS}] %-5p [%t] %C{1}.%M(%L) - %m%n" />
+<!-- 			<param name="ConversionPattern" value="[%d{yyyy-MM-dd hh:mm:ss.SSS}] %-5p [%t] %C{1}.%M(%L) - %m%n" /> -->
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd hh:mm:ss.SSS}] %-5p - %m%n" />
 		</layout>
 	</appender>
 	
