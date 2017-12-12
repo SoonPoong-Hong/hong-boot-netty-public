@@ -17,6 +17,9 @@ package rocklike.netty.ws.client;
 
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -57,7 +60,10 @@ public final class WebSocketClient_92 {
 		eternal.start();
 	}
 
+	private Logger logger = LoggerFactory.getLogger(getClass());
+
 	void start(EventLoopGroup eventGroup) throws Exception {
+		logger.info("== start..");
 		URI uri = new URI("ws://12.4.96.92:59768");
 		String scheme = uri.getScheme();
 		final String host = uri.getHost();

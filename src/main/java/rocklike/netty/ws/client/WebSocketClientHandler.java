@@ -43,6 +43,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -62,6 +65,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	private LocalDateTime start;
 	private LocalDateTime end;
@@ -110,7 +115,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
 		end = LocalDateTime.now();
-		System.out.printf(now() + "=== disconnected => 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
+		logger.info("=== disconnected => 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
+//		System.out.printf(now() + "=== disconnected => 시작:%s, 끝:%s , 걸린시간(분):%s \n", start.format(formatter), end.format(formatter) , ChronoUnit.SECONDS.between(start, end) / 60.0);
 	}
 
     @Override
@@ -131,7 +137,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		final EventLoop loop = ctx.channel().eventLoop();
 		// 끊어지면 1초 있다가 다시 connect
 		loop.schedule(() -> {
-			System.out.println(now() + "=== reconnecting.. ");
+			logger.info("=== reconnecting..");
 			try {
 				new WebSocketClient_92().start(loop);
 			} catch (Exception e) {
@@ -146,7 +152,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		Channel ch = ctx.channel();
 		if (!handshaker.isHandshakeComplete()) {
 			handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-			System.out.println(now() + "=== connected!");
+			logger.info("== connected..");
 			handshakeFuture.setSuccess();
 			return;
 		}
@@ -160,7 +166,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		WebSocketFrame frame = (WebSocketFrame) msg;
 		if (frame instanceof TextWebSocketFrame) {
 			TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-			System.out.println(textFrame.text());
+//			System.out.println(textFrame.text());
+			logger.info(textFrame.text());
 //			System.out.println(textFrame.text().substring(0, 3));
 		} else if (frame instanceof PongWebSocketFrame) {
 			System.out.println("WebSocket Client received pong");
