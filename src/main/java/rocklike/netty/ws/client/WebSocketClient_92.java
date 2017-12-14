@@ -64,7 +64,8 @@ public final class WebSocketClient_92 {
 
 	void start(EventLoopGroup eventGroup) throws Exception {
 		logger.info("== start..");
-		URI uri = new URI("ws://12.4.96.92:59768");
+//		URI uri = new URI("ws://12.4.96.92:59768");
+		URI uri = new URI("ws://12.4.108.35:59768");
 		String scheme = uri.getScheme();
 		final String host = uri.getHost();
 		final int port;
