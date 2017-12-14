@@ -41,10 +41,10 @@ import io.netty.handler.timeout.IdleStateHandler;
 /**
  * 장애 받는 웹소켓
  */
-public final class WebSocketClient_92 {
+public final class WebSocketClient_alert_main {
 
 	public static void main(String[] args) throws Exception {
-		WebSocketClient_92 main = new WebSocketClient_92();
+		WebSocketClient_alert_main main = new WebSocketClient_alert_main();
 		EventLoopGroup eventGroup = new NioEventLoopGroup();
 		main.start(eventGroup);
 

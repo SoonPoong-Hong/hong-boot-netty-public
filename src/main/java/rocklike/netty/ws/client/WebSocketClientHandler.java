@@ -139,7 +139,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		loop.schedule(() -> {
 			logger.error("=== reconnecting..");
 			try {
-				new WebSocketClient_92().start(loop);
+				new WebSocketClient_alert_main().start(loop);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
