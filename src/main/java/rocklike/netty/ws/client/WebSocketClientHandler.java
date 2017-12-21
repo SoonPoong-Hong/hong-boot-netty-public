@@ -37,6 +37,8 @@
 
 package rocklike.netty.ws.client;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -53,7 +55,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
@@ -75,6 +76,22 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	private final WebSocketClientHandshaker handshaker;
 	private ChannelPromise handshakeFuture;
 
+	private FileWriter fw ;
+	private void createFileWriter() {
+		if(fw!=null) {
+			try {
+				fw.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+		try {
+			fw = new FileWriter("l:/websocket.txt", true);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
 //	public static void main(String[] args) {
 //		DateTimeFormatter pattern = DateTimeFormatter.ofPattern("HH:mm:ss");
 //		String f = LocalDateTime.now().format(pattern);
@@ -105,6 +122,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	public void channelActive(ChannelHandlerContext ctx) {
 		start = LocalDateTime.now();
 		handshaker.handshake(ctx.channel());
+		createFileWriter();
 	}
 
 	private String now() {
@@ -135,7 +153,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		final EventLoop loop = ctx.channel().eventLoop();
-		// 끊어지면 1초 있다가 다시 connect
+		// 끊어지면 0.1초 있다가 다시 connect
 		loop.schedule(() -> {
 			logger.error("=== reconnecting..");
 			try {
@@ -144,7 +162,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 				e.printStackTrace();
 			}
 
-		}, 1000, TimeUnit.MILLISECONDS);
+		}, 100, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -166,8 +184,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 		WebSocketFrame frame = (WebSocketFrame) msg;
 		if (frame instanceof TextWebSocketFrame) {
 			TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
+			String text = textFrame.text();
+			fw.write(text+"\n");
 //			System.out.println(textFrame.text());
-			logger.debug(textFrame.text());
+			logger.debug(text.length()+"");
 //			System.out.println(textFrame.text().substring(0, 3));
 		} else if (frame instanceof PongWebSocketFrame) {
 			System.out.println("WebSocket Client received pong");
